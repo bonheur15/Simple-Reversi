@@ -26,6 +26,7 @@ const Board: React.FC<BoardProps> = ({ board, onCellClick, validMoves, currentPl
                             onClick={() => onCellClick(rowIndex, colIndex)}
                             isValidMove={isValidMove}
                             currentPlayer={currentPlayer}
+                            isInvalid={isInvalidClick}
                         />
                     );
                 })

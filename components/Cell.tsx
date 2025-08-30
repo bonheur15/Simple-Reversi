@@ -8,6 +8,7 @@ interface CellProps {
     onClick: () => void;
     isValidMove: boolean;
     currentPlayer: Player;
+    isInvalid?: boolean;
 }
 
 const Piece: React.FC<{ player: Player }> = ({ player }) => {
@@ -17,14 +18,16 @@ const Piece: React.FC<{ player: Player }> = ({ player }) => {
 };
 
 
-const Cell: React.FC<CellProps> = ({ state, onClick, isValidMove, currentPlayer }) => {
+const Cell: React.FC<CellProps> = ({ state, onClick, isValidMove, currentPlayer, isInvalid }) => {
     const baseStyle = 'w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 flex items-center justify-center rounded-sm transition-colors duration-200';
     const bgStyle = 'bg-green-700 hover:bg-green-600';
     const validMoveHintColor = currentPlayer === CellState.BLACK ? 'bg-black/30' : 'bg-white/30';
     const cursorStyle = isValidMove ? 'cursor-pointer' : 'cursor-default';
+    // FIX: Add a shake animation for when a user clicks on an invalid cell.
+    const shakeClass = isInvalid ? 'animate-shake' : '';
 
     return (
-        <div className={`${baseStyle} ${bgStyle} ${cursorStyle}`} onClick={onClick}>
+        <div className={`${baseStyle} ${bgStyle} ${cursorStyle} ${shakeClass}`} onClick={onClick}>
             <div className="w-full h-full p-1 relative">
                 {state !== CellState.EMPTY && <Piece player={state} />}
                 {isValidMove && (

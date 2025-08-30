@@ -13,3 +13,7 @@ const audioSources: { [key in Sounds]: string } = {
 [Sounds.LOSE]: "",
 [Sounds.ERROR]: ""
 }
+
+export function playAudio(sound:Sounds){
+    return null;
+}

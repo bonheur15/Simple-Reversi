@@ -1,0 +1,34 @@
+import React from 'react';
+import type { BoardState, Player } from '../types';
+import Cell from './Cell';
+
+interface BoardProps {
+    board: BoardState;
+    onCellClick: (row: number, col: number) => void;
+    validMoves: [number, number][];
+    currentPlayer: Player;
+    boardDisabled: boolean;
+}
+
+const Board: React.FC<BoardProps> = ({ board, onCellClick, validMoves, currentPlayer, boardDisabled }) => {
+    return (
+        <div className={`grid grid-cols-8 gap-1 p-2 bg-gray-800 rounded-lg shadow-2xl transition-opacity duration-300 ${boardDisabled ? 'pointer-events-none opacity-60' : ''}`}>
+            {board.map((row, rowIndex) =>
+                row.map((cellState, colIndex) => {
+                    const isValidMove = validMoves.some(([r, c]) => r === rowIndex && c === colIndex);
+                    return (
+                        <Cell
+                            key={`${rowIndex}-${colIndex}`}
+                            state={cellState}
+                            onClick={() => onCellClick(rowIndex, colIndex)}
+                            isValidMove={isValidMove}
+                            currentPlayer={currentPlayer}
+                        />
+                    );
+                })
+            )}
+        </div>
+    );
+};
+
+export default Board;

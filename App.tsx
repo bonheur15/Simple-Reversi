@@ -6,6 +6,7 @@ import GameInfo from './components/GameInfo';
 import ResetButton from './components/ResetButton';
 import { getValidMoves, makeMove, calculateScores, createInitialBoard } from './utils/gameLogic';
 import { findBestMove } from './utils/ai';
+import { playAudio, Sounds } from './utils/sounds';
 
 const App: React.FC = () => {
     const [board, setBoard] = useState<BoardState>(createInitialBoard());
@@ -14,6 +15,7 @@ const App: React.FC = () => {
     const [scores, setScores] = useState({ black: 2, white: 2 });
     const [gameOver, setGameOver] = useState(false);
     const [message, setMessage] = useState("Black's Turn");
+    const [invalidCell, setInvalidCell] = useState<[number, number] | null>(null);
 
     const updateGameStatus = useCallback((currentBoard: BoardState, nextPlayer: Player) => {
         const newScores = calculateScores(currentBoard);
@@ -27,26 +29,26 @@ const App: React.FC = () => {
             setMessage(`${nextPlayer === CellState.BLACK ? 'Black' : 'White'}'s Turn`);
             setGameOver(false);
         } else {
-            // If the next player has no moves, check if the opponent has any
             const opponent = nextPlayer === CellState.BLACK ? CellState.WHITE : CellState.BLACK;
             const currentPlayerValidMoves = getValidMoves(currentBoard, opponent);
             if (currentPlayerValidMoves.length > 0) {
-                // The turn is passed back
                 setValidMoves(currentPlayerValidMoves);
                 setCurrentPlayer(opponent);
                 const passedPlayer = nextPlayer === CellState.BLACK ? 'Black' : 'White';
                 const nextTurnPlayer = opponent === CellState.BLACK ? 'Black' : 'White';
                 setMessage(`${nextTurnPlayer}'s Turn (${passedPlayer} passed)`);
             } else {
-                // Game over: neither player has moves
                 setGameOver(true);
                 setValidMoves([]);
                 if (newScores.black > newScores.white) {
                     setMessage(`Game Over! Black wins ${newScores.black} to ${newScores.white}.`);
+                    playAudio(Sounds.WIN);
                 } else if (newScores.white > newScores.black) {
                     setMessage(`Game Over! White wins ${newScores.white} to ${newScores.black}.`);
+                    playAudio(Sounds.LOSE);
                 } else {
                     setMessage(`Game Over! It's a draw.`);
+                    playAudio(Sounds.LOSE); // Using lose sound for draw
                 }
             }
         }
@@ -58,9 +60,13 @@ const App: React.FC = () => {
 
     const handleCellClick = useCallback((row: number, col: number) => {
         if (gameOver || !validMoves.some(([r, c]) => r === row && c === col)) {
+            playAudio(Sounds.ERROR);
+            setInvalidCell([row, col]);
+            setTimeout(() => setInvalidCell(null), 300);
             return;
         }
-
+        
+        playAudio(Sounds.PLACE);
         const newBoard = makeMove(board, row, col, currentPlayer);
         setBoard(newBoard);
 
@@ -106,6 +112,7 @@ const App: React.FC = () => {
                         validMoves={validMoves}
                         currentPlayer={currentPlayer}
                         boardDisabled={isAIsTurn || gameOver}
+                        invalidCell={invalidCell}
                     />
                     {gameOver && (
                         <div className="absolute inset-0 bg-black bg-opacity-60 flex items-center justify-center rounded-lg">
